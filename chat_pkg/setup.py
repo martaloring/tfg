@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
         	'test_1 = chat_pkg.test_1:main',
         	'test_2 = chat_pkg.test_2:main',
+        	'test_3 = chat_pkg.test_3:main',
         ],
     },
 )

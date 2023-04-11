@@ -12,7 +12,7 @@ class chat_response(Node):
         super().__init__('test_1')
 
         model = whisper.load_model("base")
-        self._mp3_path = '/home/marta/ros2_ws/src/chat_pkg/mp3_files/provincias.mp3'
+        self._mp3_path = '/home/mapir/ros2_ws/src/chat_pkg/mp3_files/provincias.mp3'
         self.result = model.transcribe(self._mp3_path)
         print(self.result["text"])
 
