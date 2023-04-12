@@ -14,6 +14,7 @@ import threading
 import click
 import torch
 import numpy as np
+from TTS.api import TTS
 
 from youdotcom import Chat
 
@@ -49,7 +50,7 @@ class chat_response(Node):
         r.dynamic_energy_threshold = self.dynamic_energy
 
         with sr.Microphone(sample_rate=16000) as source:
-            print("Say something!")
+            print("Di algo!")
             while True:
                 audio = r.listen(source)
                 torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
@@ -62,17 +63,17 @@ class chat_response(Node):
             self.audio_data = self.audio_queue.get()
             self.result = self.audio_model.transcribe(self.audio_data)
             self.predicted_text = self.result["text"]
-            self.result_queue.put_nowait("You said: " + self.predicted_text)
+            self.result_queue.put_nowait("Has dicho: " + self.predicted_text)
             self.generate_response()
 
 
     def generate_response(self):
         
-        self.result["text"] = "Responde en español a la siguiente pregunta: "+ self.predicted_text
-        chat = Chat.send_message(message=self.result, api_key="1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH") # send a message to YouChat. passing the message and your api key
+        #self.result["text"] = "Responde en español a la siguiente pregunta: "+ self.predicted_text       #otra api key --> 1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH
+        chat = Chat.send_message(message=self.result["text"], api_key="UC75QFXQ68TP0HANTHJ6ZO0J6L6JTS2JS07") # send a message to YouChat. passing the message and your api key
         print("Respuesta:")
         # you can get an api key form the site: https://api.betterapi.net/ (with is also made by me)
-        print(chat['message'])  # returns the message and some other data
+        print(chat["message"])  # returns the message and some other data
         self.main_fun()
 
 def main(args=None):

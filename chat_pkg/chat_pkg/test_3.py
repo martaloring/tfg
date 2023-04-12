@@ -2,6 +2,7 @@ import rclpy
 import sys
 from rclpy.node import Node
 from rclpy.exceptions import ROSInterruptException
+#sys.path.append('/home/marta/ros2_ws/src/chat_pkg')
 import io
 from pydub import AudioSegment
 import speech_recognition as sr
@@ -13,41 +14,34 @@ import threading
 import click
 import torch
 import numpy as np
+from TTS.api import TTS
+import vlc
 
-# @click.command()
-# @click.option("--model", default="base", help="Model to use", type=click.Choice(["tiny","base", "small","medium","large"]))
-# @click.option("--english", default=False, help="Whether to use English model",is_flag=True, type=bool)
-# @click.option("--verbose", default=False, help="Whether to print verbose output", is_flag=True,type=bool)
-# @click.option("--energy", default=300, help="Energy level for mic to detect", type=int)
-# @click.option("--dynamic_energy", default=False,is_flag=True, help="Flag to enable dynamic engergy", type=bool)
-# @click.option("--pause", default=0.8, help="Pause time before entry ends", type=float)
-# @click.option("--save_file",default=False, help="Flag to save file", is_flag=True,type=bool)
+from youdotcom import Chat
+
 
 class chat_response(Node):
     def __init__(self):
-        super().__init__('test_2')
+        super().__init__('test_2')  
         self.model = "base"
         self.english = False
         self.verbose = False
         self.energy = 300
         self.dynamic_energy = False
         self.pause = 0.8
-        self.save_file = False      
+        self.save_file = False
+        self.temp_dir = tempfile.mkdtemp()
+        self.audio_model = whisper.load_model("base")
+        self.audio_queue = queue.Queue()
+        self.result_queue = queue.Queue()          
 
     def main_fun(self):
-        self.temp_dir = tempfile.mkdtemp() if self.save_file else None
-        #there are no english models for large
-        if self.model != "large" and self.english:
-            self.model = self.model + ".en"
-        self.audio_model = whisper.load_model(self.model)
-        self.audio_queue = queue.Queue()
-        self.result_queue = queue.Queue()
+        
         threading.Thread(target=self.record_audio).start()
         threading.Thread(target=self.transcribe_forever).start()
-
+        
         while True:
             print(self.result_queue.get())
-
 
     def record_audio(self):
         #load the speech recognizer and set the initial energy threshold and pause threshold
@@ -57,42 +51,39 @@ class chat_response(Node):
         r.dynamic_energy_threshold = self.dynamic_energy
 
         with sr.Microphone(sample_rate=16000) as source:
-            print("Say something!")
-            i = 0
+            print("Di algo!")
             while True:
-                #get and save audio to wav file
                 audio = r.listen(source)
-                if self.save_file:
-                    data = io.BytesIO(audio.get_wav_data())
-                    audio_clip = AudioSegment.from_file(data)
-                    filename = os.path.join(self.temp_dir, f"temp{i}.wav")
-                    audio_clip.export(filename, format="wav")
-                    audio_data = filename
-                else:
-                    torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
-                    audio_data = torch_audio
+                torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
+                self.audio_data = torch_audio
 
-                self.audio_queue.put_nowait(audio_data)
-                i += 1
-
-
+                self.audio_queue.put_nowait(self.audio_data)
+    
     def transcribe_forever(self):
         while True:
-            audio_data = self.audio_queue.get()
-            if self.english:
-                result = self.audio_model.transcribe(audio_data,language='english')
-            else:
-                result = self.audio_model.transcribe(audio_data)
+            self.audio_data = self.audio_queue.get()
+            self.result = self.audio_model.transcribe(self.audio_data)
+            self.predicted_text = self.result["text"]
+            self.result_queue.put_nowait("Has dicho: " + self.predicted_text)
+            self.generate_response()
 
-            if not self.verbose:
-                predicted_text = result["text"]
-                self.result_queue.put_nowait("You said: " + predicted_text)
-            else:
-                self.result_queue.put_nowait(result)
 
-            if self.save_file:
-                os.remove(audio_data)
+    def generate_response(self):
+        
+        #self.result["text"] = "Responde en español a la siguiente pregunta: "+ self.predicted_text       #otra api key --> 1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH
+        chat = Chat.send_message(message=self.result["text"], api_key="UC75QFXQ68TP0HANTHJ6ZO0J6L6JTS2JS07") # send a message to YouChat. passing the message and your api key
+        print("Respuesta:")
+        # you can get an api key form the site: https://api.betterapi.net/ (with is also made by me)
+        print(chat["message"])  # returns the message and some other data
 
+        tts2 = TTS("tts_models/es/css10/vits")
+
+        tts2.tts_to_file(text=chat["message"], file_path="/home/mapir/output_test.mp3")
+
+        p = vlc.MediaPlayer("file:///home/mapir/output_test.mp3")
+        p.play()
+
+        self.main_fun()
 
 def main(args=None):
     rclpy.init(args=args)
