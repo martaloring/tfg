@@ -16,13 +16,13 @@ import torch
 import numpy as np
 from TTS.api import TTS
 import vlc
+from std_msgs.msg import Bool
 
 from youdotcom import Chat
 
-
 class chat_response(Node):
     def __init__(self):
-        super().__init__('test_3')  
+        super().__init__('test_keyword')  
         self.model = "base"
         self.english = False
         self.verbose = False
@@ -33,7 +33,8 @@ class chat_response(Node):
         self.temp_dir = tempfile.mkdtemp()
         self.audio_model = whisper.load_model("base")
         self.audio_queue = queue.Queue()
-        self.result_queue = queue.Queue()          
+        self.result_queue = queue.Queue()
+        self._pub_HOLA_SANCHO = self.create_publisher(Bool, "/hola_sancho", 1)          
 
     def main_fun(self):
         
@@ -51,7 +52,7 @@ class chat_response(Node):
         r.dynamic_energy_threshold = self.dynamic_energy
 
         with sr.Microphone(sample_rate=16000) as source:
-            print("Di algo!")
+            print("Esperando a ser llamado...")
             while True:
                 audio = r.listen(source)
                 torch_audio = torch.from_numpy(np.frombuffer(audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
@@ -64,26 +65,27 @@ class chat_response(Node):
             self.audio_data = self.audio_queue.get()
             self.result = self.audio_model.transcribe(self.audio_data)
             self.predicted_text = self.result["text"]
+
+            if(self.predicted_text == " Hola, Sancio." or self.predicted_text == " Hola, Sancho."):
+                print("HAS DICHO SANCHO!!")
+                tts2 = TTS("tts_models/es/css10/vits")
+
+                tts2.tts_to_file(text="Hola, Marta.", file_path="/home/mapir/saludo.mp3")
+
+                p = vlc.MediaPlayer("file:///home/mapir/saludo.mp3")
+                p.play()
+
+                msg = Bool()
+                msg.data = True
+                self._pub_HOLA_SANCHO.publish(msg)
+
+            # else:
+            #     msg = Bool()
+            #     msg.data = False
+            #     self._pub_HOLA_SANCHO.publish(msg)
+
             self.result_queue.put_nowait("Has dicho: " + self.predicted_text)
-            self.generate_response()
-
-
-    def generate_response(self):
-        
-        #self.result["text"] = "Responde en español a la siguiente pregunta: "+ self.predicted_text       #otra api key --> 1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH
-        chat = Chat.send_message(message=self.result["text"], api_key="UC75QFXQ68TP0HANTHJ6ZO0J6L6JTS2JS07") # send a message to YouChat. passing the message and your api key
-        print("Respuesta:")
-        # you can get an api key form the site: https://api.betterapi.net/ (with is also made by me)
-        print(chat["message"])  # returns the message and some other data
-
-        tts2 = TTS("tts_models/es/css10/vits")
-
-        tts2.tts_to_file(text=chat["message"], file_path="/home/mapir/output_test.mp3")
-
-        p = vlc.MediaPlayer("file:///home/mapir/output_test.mp3")
-        p.play()
-
-        self.main_fun()
+            
 
 def main(args=None):
     rclpy.init(args=args)

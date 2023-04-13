@@ -23,6 +23,8 @@ setup(
         	'test_1 = chat_pkg.test_1:main',
         	'test_2 = chat_pkg.test_2:main',
         	'test_3 = chat_pkg.test_3:main',
+        	'test_keyword = chat_pkg.test_keyword:main',
+        	'test_sub_key = chat_pkg.test_sub_key:main',
         ],
     },
 )
