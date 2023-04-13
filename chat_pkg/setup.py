@@ -20,11 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-        	'test_1 = chat_pkg.test_1:main',
-        	'test_2 = chat_pkg.test_2:main',
-        	'test_3 = chat_pkg.test_3:main',
-        	'test_keyword = chat_pkg.test_keyword:main',
-        	'test_sub_key = chat_pkg.test_sub_key:main',
+        	'asr_node = chat_pkg.asr_node:main',
+        	'chat_node = chat_pkg.chat_node:main',
+        	'tts_node = chat_pkg.tts_node:main',
         ],
     },
 )
