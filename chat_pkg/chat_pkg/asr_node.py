@@ -17,6 +17,7 @@ import numpy as np
 from TTS.api import TTS
 from std_msgs.msg import String
 import vlc
+import rclpy.time
 
 
 class ASR(Node):
@@ -38,6 +39,10 @@ class ASR(Node):
         
         while (rclpy.ok()):
             print(self.result_queue.get())
+            if(self.send_text):
+                now = self.get_clock().now()
+                if((now - self.past).nanoseconds*1e-9) > 20:
+                    self.send_text = False
 
     def record_audio(self):
         r = sr.Recognizer()
@@ -59,24 +64,26 @@ class ASR(Node):
             self.audio_data = self.audio_queue.get()
             self.result = self.audio_model.transcribe(self.audio_data)
             self.predicted_text = self.result["text"]
+            self.detected_language = self.result["language"]
 
-            if(self.send_text):
-                msg = String()
-                msg.data = self.predicted_text
-                self._pub_text.publish(msg)
-        
-            if(self.predicted_text == " Hola, Sancio." or self.predicted_text == " Hola, Sancho."):
-                print("HAS DICHO SANCHO!!")
-                tts2 = TTS("tts_models/es/css10/vits")
+            if(self.detected_language == "es"):
 
-                tts2.tts_to_file(text="Hola, Marta.", file_path="/home/mapir/saludo.mp3")
+                if(self.send_text):
+                    msg = String()
+                    msg.data = self.predicted_text
+                    self._pub_text.publish(msg)
+            
+                if(self.predicted_text == " Hola, Sancio." or self.predicted_text == " Hola, Sancho." or self.predicted_text == " Hola Sancio." or self.predicted_text == " Hola Sancho."):
+                    print("HAS DICHO SANCHO!!")
+                    tts2 = TTS("tts_models/es/css10/vits")
+                    tts2.tts_to_file(text="Hola, Marta.", file_path="/home/mapir/saludo.mp3")
+                    p = vlc.MediaPlayer("file:///home/mapir/saludo.mp3")
+                    p.play()
 
-                p = vlc.MediaPlayer("file:///home/mapir/saludo.mp3")
-                p.play()
+                    self.send_text = True
+                    self.past = self.get_clock().now()
 
-                self.send_text = True
-
-            self.result_queue.put_nowait("Has dicho: " + self.predicted_text)
+                self.result_queue.put_nowait("Has dicho: " + self.predicted_text)
 
 def main(args=None):
     rclpy.init(args=args)
