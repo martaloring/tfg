@@ -12,7 +12,7 @@ class chat_response(Node):
         super().__init__('chat_node')
         self.ask_chat = False
         self._sub_text = self.create_subscription(String, "/predicted_text", self.callback_asr, 1)
-        self._pub_response = self.create_publisher(String, "/response", 1)   
+        self._pub_response = self.create_publisher(String, "/input_text", 1)   
 
     def callback_asr(self, msg):
         self.ask_chat = True

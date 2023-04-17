@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from setuptools import setup
 
 package_name = 'chat_pkg'
@@ -23,6 +25,8 @@ setup(
         	'asr_node = chat_pkg.asr_node:main',
         	'chat_node = chat_pkg.chat_node:main',
         	'tts_node = chat_pkg.tts_node:main',
+        	'social_patrol = chat_pkg.social_patrol:main',
+        	'poses_mng = chat_pkg.poses_mng:main',
         ],
     },
 )
