@@ -16,8 +16,9 @@ class SocialPatrol(Node):
 
         self._pub_patrol = self.create_publisher(PoseStamped, "/filtered_pose", 1)   
         self._sub_openpose = self.create_subscription(PoseArray, "/poses_topic", self.callback_OP, 1)
-        self._sub_compute = self.create_publisher(Bool, "/compute_pose", self.callback_compute, 1) 
+        self._sub_compute = self.create_subscription(Bool, "/compute_pose", self.callback_compute, 1) 
         self.send = False
+        self.var = True
 
     def callback_compute(self,msg):
         print("callback compute")
@@ -31,10 +32,11 @@ class SocialPatrol(Node):
             p_goal = self.pose_front(msg.poses[0])
             pose.pose = p_goal
             pose.header.frame_id = 'map'
+            self._pub_patrol.publish(pose)
 
     def pose_front(self, p_user):
-        p_goal = Pose()
-        return p_goal
+        #p_goal = Pose()
+        return p_user
         
 
     def main_loop(self): 
