@@ -18,10 +18,10 @@ class SocialPatrol(Node):
     def __init__(self):
         super().__init__('social_patrol')
 
-        self._pub_tts = self.create_publisher(String, "/input_text", 1)
+        self._pub_tts = self.create_publisher(String, "/input_tts", 1)
         self._pub_compute = self.create_publisher(Bool, "/compute_pose", 1)
-        self._sub_asr = self.create_subscription(String, "/asr_info", self.callback_ASR, 1)      
-        self._sub_openpose = self.create_subscription(PoseStamped, "/filtered_pose", self.callback_OP, 1) 
+        self._sub_asr = self.create_subscription(Bool, "/end_conver", self.callback_CHAT, 1)      
+        self._sub_openpose = self.create_subscription(PoseStamped, "/filtered_pose", self.callback_OP, 1)   
         self.patrullando = False
         self.goToUser = False
         self.stopPatrol = False
@@ -33,14 +33,18 @@ class SocialPatrol(Node):
         self.compute_pose = False
 
     # ASR CALLBACK
-    def callback_ASR(self, msg):        # aqui mando un mensaje si ya ha terminado la conversacion y quiero volver a empezar el patrol 
-        print("callback ASR")
+    def callback_CHAT(self, msg):        # aqui mando un mensaje si ya ha terminado la conversacion y quiero volver a empezar el patrol 
+        print("callback CHAT")
+        self.startPatrol = msg.data
+        pub_msg = String()
+        pub_msg.data = "Adiós. Me voy a dar una vuelta."
+        self._pub_tts.publish(pub_msg)
 
     def callback_OP(self, msg):
         print("callback openpose")
         self.stopPatrol= True
         self.next_pose = msg
-
+        
     #####################################################################################################
     # 
     #       NAVIGATE_TO_POSE ACTION //// SEND GOAL & RESPONSE GOAL & FEEDBACK CALLBACK & RESULT GOAL 
@@ -69,18 +73,14 @@ class SocialPatrol(Node):
             return
 
     def callback_feedback_goToUser(self, feedback_msg):
-        print("callback feedback go to user")
+        #print("callback feedback go to user")
         feedback = feedback_msg.feedback
-        self.get_logger().info('Received feedback, distance remaining: {0}'.format(feedback.distance_remaining))
+        #self.get_logger().info('Received feedback, distance remaining: {0}'.format(feedback.distance_remaining))
 
     def callback_result_goToUser(self, future):
-        print("¿he llegado?")
-
-        # si encuentro alguna variable que se de cuenta de que no he llegado, puedo volver a hacer (self.goTouser = True)
-
         print("exito go to user!")
         pub_msg = String()
-        pub_msg.data = "Hola, soy Sancho el robot de servicio. Estoy disponible para lo que necesites. Si quieres hacerme alguna pregunta di: Hola, Sancho."
+        pub_msg.data = "Hola, soy el robot de servicio. Si quieres hacerme alguna pregunta di: Hola."
         self._pub_tts.publish(pub_msg)
 
     ##########################################################################################
@@ -95,7 +95,7 @@ class SocialPatrol(Node):
         self.patrullando = True
         self.compute_pose = False
         goal_msg = PatrolTimes.Goal()
-        goal_msg.times = 2
+        goal_msg.times = 5
         self._send_goal_patrol = self.patrol_client.send_goal_async(goal_msg)
         self._send_goal_patrol.add_done_callback(self.callback_response_patrol)
 

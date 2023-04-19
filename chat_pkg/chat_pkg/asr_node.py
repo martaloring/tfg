@@ -15,7 +15,7 @@ import click
 import torch
 import numpy as np
 from TTS.api import TTS
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 import vlc
 import rclpy.time
 
@@ -30,19 +30,15 @@ class ASR(Node):
         self.audio_queue = queue.Queue()
         self.result_queue = queue.Queue()
         self.send_text = False
-        self._pub_text = self.create_publisher(String, "/predicted_text", 1)          
+        self._pub_text = self.create_publisher(String, "/predicted_text", 1)
+        self._pub_start_conver = self.create_publisher(Bool, "/start_conver", 1)          
 
     def main_loop(self):
-        
         threading.Thread(target=self.record_audio).start()
         threading.Thread(target=self.transcribe_forever).start()
         
         while (rclpy.ok()):
             print(self.result_queue.get())
-            if(self.send_text):
-                now = self.get_clock().now()
-                if((now - self.past).nanoseconds*1e-9) > 20:
-                    self.send_text = False
 
     def record_audio(self):
         r = sr.Recognizer()
@@ -58,6 +54,7 @@ class ASR(Node):
                 self.audio_data = torch_audio
 
                 self.audio_queue.put_nowait(self.audio_data)
+
     
     def transcribe_forever(self):
         while (rclpy.ok()):
@@ -72,16 +69,27 @@ class ASR(Node):
                     msg = String()
                     msg.data = self.predicted_text
                     self._pub_text.publish(msg)
-            
-                if(self.predicted_text == " Hola, Sancio." or self.predicted_text == " Hola, Sancho." or self.predicted_text == " Hola Sancio." or self.predicted_text == " Hola Sancho."):
-                    print("HAS DICHO SANCHO!!")
+
+                self.uppercase_text = self.predicted_text.upper()
+                code1 = self.uppercase_text.find("HOLA")
+                code2 = self.uppercase_text.find("SANCHO")
+                code3 = self.uppercase_text.find("SANCIO")
+                code4 = self.uppercase_text.find("SANCHEZ")
+                code5 = self.uppercase_text.find("SÁNCHEZ")
+
+
+
+                if(code1 != -1 and (code2 != -1 or code3 != -1 or code4 != -1 or code5 != -1)):
+                    print("HAS DICHO HOLA!!")
                     tts2 = TTS("tts_models/es/css10/vits")
-                    tts2.tts_to_file(text="Hola, Marta.", file_path="/home/mapir/saludo.mp3")
+                    tts2.tts_to_file(text="Hola.", file_path="/home/mapir/saludo.mp3")
                     p = vlc.MediaPlayer("file:///home/mapir/saludo.mp3")
                     p.play()
 
+                    pub_start = Bool()
+                    pub_start.data = True
                     self.send_text = True
-                    self.past = self.get_clock().now()
+                    self._pub_start_conver.publish(pub_start)
 
                 self.result_queue.put_nowait("Has dicho: " + self.predicted_text)
 

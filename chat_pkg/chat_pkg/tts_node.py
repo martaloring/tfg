@@ -27,7 +27,7 @@ class TTS_(Node):
         self.audio_queue = queue.Queue()
         self.result_queue = queue.Queue()
         self.speak = False
-        self._sub_resp = self.create_subscription(String, "/input_text", self.callback_chat, 1)
+        self._sub_resp = self.create_subscription(String, "/input_tts", self.callback_chat, 1)
 
     def callback_chat(self, msg):
         self.speak = True
