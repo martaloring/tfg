@@ -41,11 +41,11 @@ def generate_launch_description():
         # OPENPOSE MAIN
         openpose_launch,
         
-        # ASR (SPEECH RECOGNITION)    -- only activates listening when social patroll says
+        # ASR (SPEECH RECOGNITION)   
         Node(
             package = 'chat_pkg',
-            name = 'asr_sp_node',
-            executable = 'asr_sp_node',
+            name = 'asr_node',
+            executable = 'asr_node',
             output = 'screen',
             prefix = 'xterm -e'),
 

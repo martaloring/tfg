@@ -13,13 +13,7 @@ def generate_launch_description():
             'launch'),
             '/main.launch.py'])
     )
-            
-    patrol_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory(
-            'patrol'),
-            'launch'),
-            '/patrol_launch.py'])            
-    )
+
     return LaunchDescription([
         # NAV MAIN
         nav_launch,
@@ -30,7 +24,7 @@ def generate_launch_description():
             name = 'rviz2',
             executable = 'rviz2',
             output = 'screen'),
-        
+            
         # ASR (SPEECH RECOGNITION)   
         Node(
             package = 'chat_pkg',
@@ -61,10 +55,7 @@ def generate_launch_description():
             name = 'poses_mng',
             executable = 'poses_mng',
             output = 'screen',
-            prefix = 'xterm -e'),
-            
-        # PATROL LAUNCH
-        patrol_launch
+            prefix = 'xterm -e')
             
         
     ])

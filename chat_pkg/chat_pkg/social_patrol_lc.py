@@ -1,5 +1,7 @@
 import rclpy
 import sys
+import os
+import signal
 from rclpy.node import Node
 from rclpy.exceptions import ROSInterruptException
 #sys.path.append('/home/mapir/ros2_ws/src/patrol')
@@ -13,6 +15,9 @@ from patrol.action import PatrolTimes
 from action_msgs.msg import GoalStatus
 import rclpy.clock
 import rclpy.duration
+from lifecycle_msgs.srv import ChangeState
+from lifecycle_msgs.msg import Transition
+from openpose_interfaces.srv import StartDetectionHuman
 
 class SocialPatrol(Node):
     def __init__(self):
@@ -20,7 +25,6 @@ class SocialPatrol(Node):
 
         self._pub_tts = self.create_publisher(String, "/input_tts", 1)
         self._pub_compute = self.create_publisher(Bool, "/compute_pose", 1)
-        self._pub_listen = self.create_publisher(Bool, "/start_listening", 1)
         self._sub_asr = self.create_subscription(Bool, "/end_conver", self.callback_CHAT, 1)      
         self._sub_openpose = self.create_subscription(PoseStamped, "/filtered_pose", self.callback_OP, 1)   
         self.patrullando = False
@@ -32,6 +36,15 @@ class SocialPatrol(Node):
         self.navToPose_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
         self.past = self.get_clock().now()
         self.compute_pose = False
+
+        # LIFECYCLE CLIENT BT NAVIGATOR
+        # self.client_bt_nav = self.create_client(ChangeState, '/bt_navigator/change_state')
+        # self.request_bt_nav_SD = ChangeState.Request()
+        # self.request_bt_nav_SD.transition.id = Transition.TRANSITION_ACTIVE_SHUTDOWN
+
+        # self.request_bt_nav_DES = ChangeState.Request()
+        # self.request_bt_nav_DES.transition.id = Transition.TRANSITION_DESTROY
+
 
     # ASR CALLBACK
     def callback_CHAT(self, msg):        # aqui mando un mensaje si ya ha terminado la conversacion y quiero volver a empezar el patrol 
@@ -81,13 +94,32 @@ class SocialPatrol(Node):
     def callback_result_goToUser(self, future):
         print("exito go to user!")
 
-        pub_msg_tts = String()
-        pub_msg_tts.data = "Hola, soy el robot de servicio. Si quieres hacerme alguna pregunta di: Hola."
-        self._pub_tts.publish(pub_msg_tts)
+        ###########################################
+        # SHUTTING DOWN AND DESTROYING BT NAVIGATOR
+        ###########################################
 
-        pub_msg_asr = Bool()
-        pub_msg_asr.data = True
-        self._pub_listen.publish(pub_msg_asr)
+        # fut = self.client_bt_nav.call_async(self.request_bt_nav_SD)
+        # rclpy.spin_until_future_complete(self, fut)
+        # success = fut.result()
+
+        # if(success):
+        #     print("SUCCESS SHUTTING DOWN BT NAVIGATOR")
+        # else:
+        #     print("FAILED SHUTTING DOWN BT NAVIGATOR")
+
+        # fut2 = self.client_bt_nav.call_async(self.request_bt_nav_DES)
+        # rclpy.spin_until_future_complete(self, fut2)
+        # success2 = fut2.result()
+
+        # if(success2):
+        #     print("SUCCESS DESTROYING BT NAVIGATOR")
+        # else:
+        #     print("FAILED DESTROYING BT NAVIGATOR")
+      
+        pub_msg = String()
+        pub_msg.data = "Hola, soy el robot de servicio. Si quieres hacerme alguna pregunta di: Hola."
+        self._pub_tts.publish(pub_msg)
+
 
     ##########################################################################################
     # 

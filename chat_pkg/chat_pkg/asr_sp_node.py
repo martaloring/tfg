@@ -30,16 +30,26 @@ class ASR(Node):
         self.audio_queue = queue.Queue()
         self.result_queue = queue.Queue()
         self.send_text = False
+        self.start_listening = False
         self._pub_text = self.create_publisher(String, "/predicted_text", 1)
-        self._pub_start_conver = self.create_publisher(Bool, "/start_conver", 1)          
+        self._pub_start_conver = self.create_publisher(Bool, "/start_conver", 1)
+        self._sub_patrol = self.create_subscription(Bool, "/start_listening", self.callback_listen, 1)          
 
-    def main_loop(self):
-        threading.Thread(target=self.record_audio).start()
-        threading.Thread(target=self.transcribe_forever).start()
-        
+    
+    
+    def main_loop(self):        
         while (rclpy.ok()):
-            print(self.result_queue.get())
+            if(self.start_listening):
+                print(self.result_queue.get())
 
+    def callback_listen(self, msg):
+        print("voy a empezar a escuchar!!!!!")
+        self.start_listening = msg.data
+        r_a_t = threading.Thread(target=self.record_audio)
+        t_f_t = threading.Thread(target=self.transcribe_forever)
+        r_a_t.start()
+        t_f_t.start()
+    
     def record_audio(self):
         r = sr.Recognizer()
         r.energy_threshold = self.energy
@@ -93,9 +103,9 @@ class ASR(Node):
 
 def main(args=None):
     rclpy.init(args=args)
+    x = ASR()
     try:
-        x = ASR()
-        x.main_loop()
+        rclpy.spin(x)
     except ROSInterruptException: 
         pass
 

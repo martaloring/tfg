@@ -18,6 +18,10 @@ class chat_response(Node):
         self._pub_response = self.create_publisher(String, "/input_tts", 1)
         self._pub_end_conver = self.create_publisher(Bool, "/end_conver", 1)
 
+        intro = "A partir de ahora quiero que tengamos toda la conversación en Español"
+        chat_ini = Chat.send_message(message=intro, api_key="1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH")
+        print(chat_ini)
+
 
     def callback_text(self, msg):
         self.past = self.get_clock().now()
