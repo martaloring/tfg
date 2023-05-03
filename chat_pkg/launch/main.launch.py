@@ -71,9 +71,9 @@ def generate_launch_description():
             name = 'poses_mng',
             executable = 'poses_mng',
             output = 'screen',
-            prefix = 'xterm -e'),
+            prefix = 'xterm -e')
             
         # PATROL SERVER
-        patrol_launch
+        #patrol_launch
             
     ])

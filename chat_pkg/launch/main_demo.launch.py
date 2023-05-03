@@ -19,13 +19,6 @@ def generate_launch_description():
             'launch'),
             '/main.launch.py'])
     )
-    
-    patrol_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory(
-            'patrol'),
-            'launch'),
-            '/patrol_launch.py'])
-    )
             
     return LaunchDescription([
         # NAV MAIN
@@ -40,40 +33,13 @@ def generate_launch_description():
         
         # OPENPOSE MAIN
         openpose_launch,
-        
-        # ASR (SPEECH RECOGNITION)   
-        Node(
-            package = 'chat_pkg',
-            name = 'asr_node',
-            executable = 'asr_node',
-            output = 'screen',
-            prefix = 'xterm -e'),
-
-        # CHAT BOT
-        Node(
-            package = 'chat_pkg',
-            name = 'chat_node',
-            executable = 'chat_node',
-            output = 'screen',
-            prefix = 'xterm -e'),
-        
-        # TTS (TEXT TO SPEECH)
-        Node(
-            package = 'chat_pkg',
-            name = 'tts_node',
-            executable = 'tts_node',
-            output = 'screen',
-            prefix = 'xterm -e'),
-            
+                    
         # POSES MANAGER
         Node(
             package = 'chat_pkg',
             name = 'poses_mng',
             executable = 'poses_mng',
             output = 'screen',
-            prefix = 'xterm -e'),
-            
-        # PATROL SERVER
-        patrol_launch
+            prefix = 'xterm -e')
             
     ])
