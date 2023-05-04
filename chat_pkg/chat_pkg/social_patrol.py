@@ -26,7 +26,8 @@ class SocialPatrol(Node):
         self.patrullando = False
         self.goToUser = False
         self.stopPatrol = False
-        self.startPatrol = True
+        #self.startPatrol = True
+        self.startPatrol = False
         self.var = True
         self.patrol_client = ActionClient(self, PatrolTimes, '/patrol_times')
         self.navToPose_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
@@ -38,7 +39,7 @@ class SocialPatrol(Node):
         print("callback CHAT")
         self.startPatrol = msg.data
         pub_msg = String()
-        pub_msg.data = "Adiós. Me voy a dar una vuelta."
+        pub_msg.data = "Un placer. Hasta pronto."
         self._pub_tts.publish(pub_msg)
 
     def callback_OP(self, msg):

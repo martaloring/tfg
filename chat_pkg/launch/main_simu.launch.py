@@ -24,22 +24,6 @@ def generate_launch_description():
             name = 'rviz2',
             executable = 'rviz2',
             output = 'screen'),
-            
-        # ASR (SPEECH RECOGNITION)   
-        Node(
-            package = 'chat_pkg',
-            name = 'asr_node',
-            executable = 'asr_node',
-            output = 'screen',
-            prefix = 'xterm -e'),
-
-        # CHAT BOT
-        Node(
-            package = 'chat_pkg',
-            name = 'chat_node',
-            executable = 'chat_node',
-            output = 'screen',
-            prefix = 'xterm -e'),
         
         # TTS (TEXT TO SPEECH)
         Node(

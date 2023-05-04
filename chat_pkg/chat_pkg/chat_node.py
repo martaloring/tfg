@@ -52,19 +52,19 @@ class chat_response(Node):
                     code = output.data.find("YouBot")
 
                     if (detect(output.data) == 'es'):
-                        print("buena respuesta")
+                        print("VALID ANSWER")
                         self._pub_response.publish(output)
 
                     self.ask_chat = False
                 
                 now = self.get_clock().now()
 
-                if((now - self.past).nanoseconds*1e-9) > 20:
+                if((now - self.past).nanoseconds*1e-9) > 40:
                     self.ask_chat = False
                     msg = Bool()
                     msg.data = True
                     self._pub_end_conver.publish(msg)
-                    print("end conversation!!!")
+                    print("TIME OUT. END OF CONVERSATION.")
                     self.in_conver = False
 
 

@@ -78,7 +78,7 @@ class ASR(Node):
                 code6 = self.uppercase_text.find("SONCHO")
 
                 if(code1 != -1 and (code2 != -1 or code3 != -1 or code4 != -1 or code5 != -1 or code6 != -1)):
-                    print("HAS DICHO HOLA!!")
+                    print("CONVERSATION REQUESTED")
                     tts2 = TTS("tts_models/es/css10/vits")
                     tts2.tts_to_file(text="Hola.", file_path="/home/mapir/saludo.mp3")
                     p = vlc.MediaPlayer("file:///home/mapir/saludo.mp3")

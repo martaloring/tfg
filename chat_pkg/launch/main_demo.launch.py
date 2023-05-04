@@ -40,6 +40,14 @@ def generate_launch_description():
             name = 'poses_mng',
             executable = 'poses_mng',
             output = 'screen',
+            prefix = 'xterm -e'),
+            
+        # TTS (TEXT TO SPEECH)
+        Node(
+            package = 'chat_pkg',
+            name = 'tts_node',
+            executable = 'tts_node',
+            output = 'screen',
             prefix = 'xterm -e')
             
     ])

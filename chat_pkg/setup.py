@@ -32,7 +32,8 @@ setup(
         	'poses_mng = chat_pkg.poses_mng:main',
         	'whisper_node = chat_pkg.whisper_node:main',
         	'asr_sp_node = chat_pkg.asr_sp_node:main',
-        	'social_patrol_lc = chat_pkg.social_patrol_lc:main'
+        	'social_patrol_lc = chat_pkg.social_patrol_lc:main',
+        	'asr_node_st = chat_pkg.asr_node_st:main'
         ],
     },
 )

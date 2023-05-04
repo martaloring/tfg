@@ -24,7 +24,7 @@ def generate_launch_description():
             executable = 'chat_node',
             output = 'screen',
             prefix = 'xterm -e'),
-        
+            
         # TTS (TEXT TO SPEECH)
         Node(
             package = 'chat_pkg',
