@@ -11,7 +11,7 @@ import vlc
 import re
 from num2words import num2words
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from mutagen.mp3 import MP3
 
 
@@ -30,7 +30,16 @@ class TTS_(Node):
         self.audio_queue = queue.Queue()
         self.result_queue = queue.Queue()
         self.speak = False
+
+        self.stop_lis = Bool()
+        self.stop_lis.data = False
+        self.start_lis = Bool()
+        self.start_lis.data = True
+
+        self.speaking = False
+
         self._sub_resp = self.create_subscription(String, "/input_tts", self.callback_chat, 1)
+        self._pub_listen = self.create_publisher(Bool, "/start_listening", 1)
 
     def callback_chat(self, msg):
         self.speak = True
@@ -53,7 +62,14 @@ class TTS_(Node):
         threading.Thread(target = rclpy.spin,args = (self,), daemon=True).start()
                 
         while (rclpy.ok()):
-            if(self.speak):
+
+            if(self.speaking):
+                now = self.get_clock().now()
+                if((now - self.past).nanoseconds*1e-9) > self.duracion_seg:         # si ya ha pasado el tiempo que dura el audio, asr vuelve a escuchar
+                    self._pub_listen.publish(self.start_lis)
+                    self.speaking = False
+
+            if(self.speak):                                                     # si tenemos nuevo input, speak
                 self.run_tts()
                 self.speak = False
 
@@ -66,12 +82,16 @@ class TTS_(Node):
         vlc_instance = vlc.Instance('--no-xlib')  # Crear una instancia de VLC
         media = vlc_instance.media_new("/home/mapir/output_test.mp3")  # Crear un objeto media para el archivo MP3
         media.parse()  # Parsear la información del archivo MP3
-        duracion = media.get_duration() / 1000  # Obtener la duración
+        self.duracion_seg = media.get_duration()/1000 # Obtener la duración en segundos
         print("LA DURACION DEL AUDIO ES:")
-        print(duracion)
+        print(self.duracion_seg)
 
+        self.past = self.get_clock().now()  
+        self._pub_listen.publish(self.stop_lis)
         p = vlc.MediaPlayer("file:///home/mapir/output_test.mp3")
         p.play()
+
+        self.speaking = True
         
 
 def main(args=None):

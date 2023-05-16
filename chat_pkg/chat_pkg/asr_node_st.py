@@ -33,7 +33,7 @@ class ASR(Node):
         self.start_listening = True
         self._pub_text = self.create_publisher(String, "/predicted_text", 1)
         self._pub_start_conver = self.create_publisher(Bool, "/start_conver", 1)
-        self._sub_patrol = self.create_subscription(Bool, "/start_listening", self.callback_listen, 1)          
+        self._sub_listen = self.create_subscription(Bool, "/start_listening", self.callback_listen, 1)          
 
         
     def main_loop(self):     
@@ -51,9 +51,6 @@ class ASR(Node):
             self.audio_queue = queue.Queue()
             #self.result_queue = queue.Queue() # vacio la cola ??
             self.audio = None
-
-            # with sr.Microphone(sample_rate=16000) as self.source:
-            #     print("di algo 3")
 
             r_a_t = threading.Thread(target=self.record_audio)
             t_f_t = threading.Thread(target=self.transcribe_forever)
