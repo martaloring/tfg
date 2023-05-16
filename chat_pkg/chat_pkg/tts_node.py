@@ -31,6 +31,9 @@ class TTS_(Node):
         self.result_queue = queue.Queue()
         self.speak = False
 
+        self._sub_resp = self.create_subscription(String, "/input_tts", self.callback_chat, 1)
+        self._pub_listen = self.create_publisher(Bool, "/start_listening", 1)
+
         self.stop_lis = Bool()
         self.stop_lis.data = False
         self.start_lis = Bool()
@@ -38,8 +41,7 @@ class TTS_(Node):
 
         self.speaking = False
 
-        self._sub_resp = self.create_subscription(String, "/input_tts", self.callback_chat, 1)
-        self._pub_listen = self.create_publisher(Bool, "/start_listening", 1)
+        self._pub_listen.publish(self.start_lis)
 
     def callback_chat(self, msg):
         self.speak = True

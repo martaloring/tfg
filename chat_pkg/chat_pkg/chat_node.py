@@ -44,7 +44,7 @@ class chat_response(Node):
         while (rclpy.ok()):
             if(self.in_conver):
                 if(self.ask_chat):
-                    #chat = Chat.send_message(message="Responde en español a la siguiente pregunta: ¿Tiene 'whisper' de OpenIA una API gratuita?", api_key="1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH") # send a message to YouChat. passing the message and your api key
+                    #api_key="1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH") # send a message to YouChat. passing the message and your api key
                     chat = Chat.send_message(message=self.predicted_text, api_key="1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH") # send a message to YouChat. passing the message and your api key
 
                     # you can get an api key form the site: https://api.betterapi.net/ (with is also made by me)
@@ -62,7 +62,7 @@ class chat_response(Node):
                 
                 now = self.get_clock().now()
 
-                if((now - self.past).nanoseconds*1e-9) > 80:
+                if((now - self.past).nanoseconds*1e-9) > 10000:
                     self.ask_chat = False
                     msg = Bool()
                     msg.data = True

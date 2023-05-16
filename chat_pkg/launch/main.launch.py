@@ -44,7 +44,7 @@ def generate_launch_description():
         # ASR (SPEECH RECOGNITION)    -- only activates listening when social patroll says
         Node(
             package = 'chat_pkg',
-            name = 'asr_sp_node',
+            name = 'asr_node',
             executable = 'asr_sp_node',
             output = 'screen',
             prefix = 'xterm -e'),

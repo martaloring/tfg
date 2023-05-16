@@ -28,12 +28,9 @@ setup(
         	'asr_node = chat_pkg.asr_node:main',
         	'chat_node = chat_pkg.chat_node:main',
         	'tts_node = chat_pkg.tts_node:main',
+        	'interface_node = chat_pkg.interface_node:main',
         	'social_patrol = chat_pkg.social_patrol:main',
-        	'poses_mng = chat_pkg.poses_mng:main',
-        	'whisper_node = chat_pkg.whisper_node:main',
-        	'asr_sp_node = chat_pkg.asr_sp_node:main',
-        	'social_patrol_lc = chat_pkg.social_patrol_lc:main',
-        	'asr_node_st = chat_pkg.asr_node_st:main'
+        	'poses_mng = chat_pkg.poses_mng:main'
         ],
     },
 )
