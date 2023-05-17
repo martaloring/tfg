@@ -3,6 +3,8 @@ from rclpy.node import Node
 from rclpy.exceptions import ROSInterruptException
 from std_msgs.msg import String
 import threading
+import sys
+from termcolor import colored, cprint
 
 class chat_interface(Node):
     def __init__(self):
@@ -15,17 +17,16 @@ class chat_interface(Node):
         print('Usuario:' + msg.data)
 
     def callback_chatbot(self, msg):
-        print('Sancho: ' + msg.data)
+        #text = colored('Sancho: ' + msg.data, 'red', attrs=['reverse', 'blink'])
+        text = colored('Sancho: ' + msg.data, 'light_cyan')
+        print(text)
         print('\n')
 
     def main_loop(self):     
         threading.Thread(target = rclpy.spin,args = (self,), daemon=True).start()   
         while (rclpy.ok()):
             loop = True
-
-
-
-        
+     
     
 def main(args=None):
     rclpy.init(args=args)
