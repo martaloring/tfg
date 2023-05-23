@@ -1,16 +1,10 @@
 import rclpy
-import sys
 from rclpy.node import Node
 from rclpy.exceptions import ROSInterruptException
-import io
-from pydub import AudioSegment
 import speech_recognition as sr
 import whisper
 import queue
-import tempfile
-import os
 import threading
-import click
 import torch
 import numpy as np
 from TTS.api import TTS

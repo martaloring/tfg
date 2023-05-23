@@ -1,34 +1,17 @@
 import rclpy
-import sys
 from rclpy.node import Node
 from rclpy.exceptions import ROSInterruptException
-import whisper
-import queue
-import tempfile
 import threading
 from TTS.api import TTS
 import vlc
 import re
 from num2words import num2words
-
 from std_msgs.msg import String, Bool
-from mutagen.mp3 import MP3
 
 
 class TTS_(Node):
     def __init__(self):
         super().__init__('tts_node')  
-        self.model = "base"
-        self.english = False
-        self.verbose = False
-        self.energy = 300
-        self.dynamic_energy = False
-        self.pause = 0.8
-        self.save_file = False
-        self.temp_dir = tempfile.mkdtemp()
-        self.audio_model = whisper.load_model("base")
-        self.audio_queue = queue.Queue()
-        self.result_queue = queue.Queue()
         self.speak = False
 
         self._sub_resp = self.create_subscription(String, "/input_tts", self.callback_chat, 1)

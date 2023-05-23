@@ -1,14 +1,9 @@
 import rclpy
-import sys
 from rclpy.node import Node
 from rclpy.exceptions import ROSInterruptException
 import threading
 from std_msgs.msg import String, Bool
 from langdetect import detect
-import requests
-import openai
-import os
-
 from youdotcom import Chat # import all the classes
 
 class chat_response(Node):
@@ -46,7 +41,6 @@ class chat_response(Node):
                 if(self.ask_chat):
                     #api_key="1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH") # send a message to YouChat. passing the message and your api key
                     chat = Chat.send_message(message=self.predicted_text, api_key="1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH") # send a message to YouChat. passing the message and your api key
-
                     # you can get an api key form the site: https://api.betterapi.net/ (with is also made by me)
                     print(chat)  # returns the message and some other data
 
