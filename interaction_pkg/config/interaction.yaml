@@ -1,0 +1,34 @@
+/**:
+    ros__parameters:
+        ASR:
+            keyword_1: [hola]           # used to invite robot into the conversation
+            keyword_2: [sancho, sancio, sanchez, sánchez, soncho]
+            
+            language: es                # filtered language
+            model: base                 # whisper model
+            
+            energy: 300                 # energy level for mic to detect
+            dynamic_energy: False       # flag to enable dynamic energy
+            pause: 0.8                  # pause time before entry ends
+            
+            intro_msg: Hola.
+            intro_path: /home/mapir/ros2_ws/src/interaction_pkg/mp3_files/saludo.mp3
+
+        CHAT:
+            language: es                # filtered language
+            timeout_secs: 180           # seconds before conversation timeout
+            betterapi_key: 1E33LVSKM5XSL2GFJDPBE5RMZGZSW46D3PH
+
+        TTS:
+            language: es                # filtered language
+            output_path: /home/mapir/ros2_ws/src/interaction_pkg/mp3_files/output.mp3
+            model_name: tts_models/es/css10/vits    # tts model
+
+        ROSTopics:
+            asr_output_topic: /predicted_text       # publish from ASR to CHAT and INTERFACE
+            start_conver_topic: /start_conver       # publish from ASR to CHAT
+            
+            tts_input_topic: /input_tts             # publish from CHAT to TTS and INTERFACE
+            end_conver_topic: /end_conver           # publish from CHAT to INTERFACE
+            
+            start_listening_topic: /start_listening # publish from TTS to ASR
