@@ -1,8 +1,8 @@
 /**:
     ros__parameters:
         ASR:
-            keyword_1: [hola]           # used to invite robot into the conversation
-            keyword_2: [sancho, sancio, sanchez, sánchez, soncho]
+            keyword_1: hola           # used to invite robot into the conversation
+            keyword_2: sancho
             
             language: es                # filtered language
             model: base                 # whisper model
@@ -23,6 +23,12 @@
             language: es                # filtered language
             output_path: /home/mapir/ros2_ws/src/interaction_pkg/mp3_files/output.mp3
             model_name: tts_models/es/css10/vits    # tts model
+
+        INTERFACE:
+            user_label: Usuario     # user name to be shown in the interface
+            robot_label: Sancho     # robot name to be shown in the interface
+            beginning_msg: Inicio de la conversación        # msg to be shown at the beginning of conversation
+            end_msg: Fin de la conversación                 # msg to be shown at the end of conversation
 
         ROSTopics:
             asr_output_topic: /predicted_text       # publish from ASR to CHAT and INTERFACE

@@ -42,7 +42,11 @@ class TTS_(Node):
         self.speak = False
         self.speaking = False
 
-        self._pub_listen.publish(self.start_lis)
+        self.first_time = True
+
+        self.time_ini = self.get_clock().now()
+
+        #self._pub_listen.publish(self.start_lis)
 
     def callback_chat(self, msg):
         self.speak = True
@@ -65,6 +69,14 @@ class TTS_(Node):
         threading.Thread(target = rclpy.spin,args = (self,), daemon=True).start()
                 
         while (rclpy.ok()):
+
+            # PARA PUBLICAR EL PRIMER START LISTENING
+            if(self.first_time):
+                time_loop = self.get_clock().now()
+
+                if((time_loop - self.time_ini).nanoseconds*1e-9) > 4:
+                    self.first_time = False
+                    self._pub_listen.publish(self.start_lis)
 
             if(self.speaking):
                 now = self.get_clock().now()

@@ -33,7 +33,7 @@ class ASR(Node):
         self.declare_parameter('ASR.language', 'es')  
         self.lang_param = self.get_parameter('ASR.language').get_parameter_value().string_value
 
-        self.declare_parameter('ASR.intro_msg', 'hola')  
+        self.declare_parameter('ASR.intro_msg', 'Hola.')  
         self.intro_msg = self.get_parameter('ASR.intro_msg').get_parameter_value().string_value
 
         self.declare_parameter('ASR.intro_path', '/home/mapir/ros2_ws/src/interaction_pkg/mp3_files/saludo.mp3')  
@@ -41,6 +41,12 @@ class ASR(Node):
 
         self.declare_parameter('TTS.model_name', 'tts_models/es/css10/vits')  
         self.tts_model = self.get_parameter('TTS.model_name').get_parameter_value().string_value
+
+        self.declare_parameter('ASR.keyword_1', 'hola')  
+        self.keyword_1 = self.get_parameter('ASR.keyword_1').get_parameter_value().string_value
+
+        self.declare_parameter('ASR.keyword_2', 'sancho')  
+        self.keyword_2 = self.get_parameter('ASR.keyword_2').get_parameter_value().string_value
 
         # falta cambiar lo de los keywords
 
@@ -93,15 +99,48 @@ class ASR(Node):
         r.energy_threshold = self.energy
         r.pause_threshold = self.pause
         r.dynamic_energy_threshold = self.dynamic_energy
-        print("di algo 1")
+        print("Inicializando...")
         with sr.Microphone(sample_rate=16000) as self.source:
-            print("Di algo 2")
+            print("Escuchando...")
             while (rclpy.ok()):
                 if(self.start_listening):
                     self.audio = r.listen(self.source)
                     torch_audio = torch.from_numpy(np.frombuffer(self.audio.get_raw_data(), np.int16).flatten().astype(np.float32) / 32768.0)
                     self.audio_data = torch_audio
                     self.audio_queue.put_nowait(self.audio_data)
+
+    def find_keyword(self,text):
+        uppercase_text = text.upper()
+        
+        keyword_1_upper = self.keyword_1.upper()
+        keyword_2_upper = self.keyword_2.upper()
+
+        code1 = uppercase_text.find(keyword_1_upper)
+        code2 = uppercase_text.find(keyword_2_upper)
+
+        # para mi caso concreto quiero añadir mas keywords
+        if(self.keyword_2.upper() == "SANCHO"):
+            code3 = uppercase_text.find("SANCIO")
+            code4 = uppercase_text.find("SANCHEZ")
+            code5 = uppercase_text.find("SÁNCHEZ")
+            code6 = uppercase_text.find("SONCHO")
+        else:
+            code3 = -1
+            code4 = -1
+            code5 = -1
+            code6 = -1
+
+        if(code1 != -1 and (code2 != -1 or code3 != -1 or code4 != -1 or code5 != -1 or code6 != -1)):
+            print("SOLICITUD DE INTERACCIÓN")
+            tts2 = TTS(self.tts_model)
+            tts2.tts_to_file(text=self.intro_msg, file_path=self.intro_path)
+            p = vlc.MediaPlayer("file://"+self.intro_path)
+            p.play()
+
+            pub_start = Bool()
+            pub_start.data = True
+            self.send_text = True
+            self._pub_start_conver.publish(pub_start)
 
     
     def transcribe_forever(self):
@@ -119,26 +158,7 @@ class ASR(Node):
                         msg.data = self.predicted_text
                         self._pub_text.publish(msg)
 
-                    self.uppercase_text = self.predicted_text.upper()
-                    # CAMBIAR LO DE LAS KEYWORDS, PARAMETROS!!!!!!!!!!!!!
-                    code1 = self.uppercase_text.find("HOLA")
-                    code2 = self.uppercase_text.find("SANCHO")
-                    code3 = self.uppercase_text.find("SANCIO")
-                    code4 = self.uppercase_text.find("SANCHEZ")
-                    code5 = self.uppercase_text.find("SÁNCHEZ")
-                    code6 = self.uppercase_text.find("SONCHO")
-
-                    if(code1 != -1 and (code2 != -1 or code3 != -1 or code4 != -1 or code5 != -1 or code6 != -1)):
-                        print("HAS DICHO HOLA!!")
-                        tts2 = TTS(self.tts_model)
-                        tts2.tts_to_file(text=self.intro_msg, file_path=self.intro_path)
-                        p = vlc.MediaPlayer("file://"+self.intro_path)
-                        p.play()
-
-                        pub_start = Bool()
-                        pub_start.data = True
-                        self.send_text = True
-                        self._pub_start_conver.publish(pub_start)
+                    self.find_keyword(self.predicted_text)
 
                     self.result_queue.put_nowait("Has dicho: " + self.predicted_text)
 

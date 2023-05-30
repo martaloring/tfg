@@ -36,7 +36,7 @@ class chat_response(Node):
 
         ################################### INITIALIZATION ################################
         self._sub_text = self.create_subscription(String, self.input_text_topic, self.callback_text, 1)
-        self._pub_start_conver = self.create_subscription(Bool, self.start_conver_topic, self.callback_start, 1)      
+        self._sub_start_conver = self.create_subscription(Bool, self.start_conver_topic, self.callback_start, 1)      
         self._pub_response = self.create_publisher(String, self.input_tts_topic, 1)
         self._pub_end_conver = self.create_publisher(Bool, self.end_conver_topic, 1)
         self.ask_chat = False
@@ -67,7 +67,6 @@ class chat_response(Node):
 
                     output = String()
                     output.data = chat['generated_text']
-                    code = output.data.find("YouBot")
 
                     if (detect(output.data) == self.lang_param):
                         print("VALID ANSWER")
