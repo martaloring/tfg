@@ -19,8 +19,8 @@ class SocialPatrol(Node):
         super().__init__('social_patrol')
 
         ################################### TOPIC PARAMETERS ################################
-        self.declare_parameter('ROSTopics.start_conver_topic', '/start_conver')  
-        self.start_conver_topic = self.get_parameter('ROSTopics.start_conver_topic').get_parameter_value().string_value
+        self.declare_parameter('ROSTopics.start_listening_topic', '/start_listening')  
+        self.start_listening_topic = self.get_parameter('ROSTopics.start_listening_topic').get_parameter_value().string_value
         
         self.declare_parameter('ROSTopics.end_conver_topic', '/end_conver')  
         self.end_conver_topic = self.get_parameter('ROSTopics.end_conver_topic').get_parameter_value().string_value
@@ -31,7 +31,7 @@ class SocialPatrol(Node):
         ################################### INITIALIZATION ################################
         # interaction topics
         self._pub_tts = self.create_publisher(String, self.input_tts_topic, 1)
-        self._pub_start_conver = self.create_publisher(Bool, self.start_conver_topic, 1)
+        self._pub_listen = self.create_publisher(Bool, self.start_listening_topic, 1)
         #self._pub_listen = self.create_publisher(Bool, "/start_listening", 1) # no hace falta porque ya lo publica tts cuando deja de hablar
         self._sub_asr = self.create_subscription(Bool, self.end_conver_topic, self.callback_CHAT, 1)    
 
@@ -160,9 +160,12 @@ class SocialPatrol(Node):
                 now = self.get_clock().now()
                 if((now - self.past).nanoseconds*1e-9) > 8: # si ya han pasado los 8 segundos desde que empecé a patrullar...
                     self.compute_pose = True                 
-                    msg = Bool()
-                    msg.data = True
-                    self._pub_compute.publish(msg)          # le mando al poses_mng un true para que a partir de ahora me pase la pose que vea
+                    msg_t = Bool()
+                    msg_t.data = True
+                    self._pub_compute.publish(msg_t)          # le mando al poses_mng un true para que a partir de ahora me pase la pose que vea
+                    msg_f = Bool()
+                    msg_f.data = False                        # le decimos a ASR que deje de escuchar durante la navegacion... para optimizar recursos ¿?
+                    self._pub_listen.publish(msg_f)
                        
             if(self.goToUser):                              # si quiero acercarme a la persona, llamo a start_goToUser()
                 self.start_goToUser()
