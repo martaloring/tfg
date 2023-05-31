@@ -18,11 +18,27 @@ class SocialPatrol(Node):
     def __init__(self):
         super().__init__('social_patrol')
 
-        self._pub_tts = self.create_publisher(String, "/input_tts", 1)
-        self._pub_compute = self.create_publisher(Bool, "/compute_pose", 1)
-        self._pub_listen = self.create_publisher(Bool, "/start_listening", 1)
-        self._sub_asr = self.create_subscription(Bool, "/end_conver", self.callback_CHAT, 1)      
-        self._sub_openpose = self.create_subscription(PoseStamped, "/filtered_pose", self.callback_OP, 1)   
+        ################################### TOPIC PARAMETERS ################################
+        self.declare_parameter('ROSTopics.start_conver_topic', '/start_conver')  
+        self.start_conver_topic = self.get_parameter('ROSTopics.start_conver_topic').get_parameter_value().string_value
+        
+        self.declare_parameter('ROSTopics.end_conver_topic', '/end_conver')  
+        self.end_conver_topic = self.get_parameter('ROSTopics.end_conver_topic').get_parameter_value().string_value
+
+        self.declare_parameter('ROSTopics.tts_input_topic', '/input_tts')  
+        self.input_tts_topic = self.get_parameter('ROSTopics.tts_input_topic').get_parameter_value().string_value
+
+        ################################### INITIALIZATION ################################
+        # interaction topics
+        self._pub_tts = self.create_publisher(String, self.input_tts_topic, 1)
+        self._pub_start_conver = self.create_publisher(Bool, self.start_conver_topic, 1)
+        #self._pub_listen = self.create_publisher(Bool, "/start_listening", 1) # no hace falta porque ya lo publica tts cuando deja de hablar
+        self._sub_asr = self.create_subscription(Bool, self.end_conver_topic, self.callback_CHAT, 1)    
+
+        # people detection topics
+        self._pub_compute = self.create_publisher(Bool, "/compute_pose", 1)  
+        self._sub_openpose = self.create_subscription(PoseStamped, "/filtered_pose", self.callback_OP, 1)
+
         self.patrullando = False
         self.goToUser = False
         self.stopPatrol = False
@@ -83,12 +99,12 @@ class SocialPatrol(Node):
         print("exito go to user!")
 
         pub_msg_tts = String()
-        pub_msg_tts.data = "Hola, soy el robot de servicio. Si quieres hacerme alguna pregunta di: Hola."
+        pub_msg_tts.data = "Hola, soy el robot de servicio. Si quieres hacerme alguna pregunta primero di: Hola Sancho."
         self._pub_tts.publish(pub_msg_tts)
 
-        pub_msg_asr = Bool()
-        pub_msg_asr.data = True
-        self._pub_listen.publish(pub_msg_asr)
+        # pub_msg_asr = Bool()
+        # pub_msg_asr.data = True
+        # self._pub_listen.publish(pub_msg_asr)
 
     ##########################################################################################
     # 
@@ -136,22 +152,25 @@ class SocialPatrol(Node):
         threading.Thread(target = rclpy.spin,args = (self,), daemon=True).start()
 
         while (rclpy.ok()):
-            if(self.startPatrol):
+            if(self.startPatrol): # si quiero empezar el patrol, llamo a start_patrol()
                 self.start_patrol()
                 self.startPatrol = False
-            if(self.patrullando and not self.compute_pose):
+            
+            if(self.patrullando and not self.compute_pose): # si estoy patrullando y estoy en los primeros 8 segundos... sigue cronometrando
                 now = self.get_clock().now()
-                if((now - self.past).nanoseconds*1e-9) > 8:
-                    self.compute_pose = True
+                if((now - self.past).nanoseconds*1e-9) > 8: # si ya han pasado los 8 segundos desde que empecé a patrullar...
+                    self.compute_pose = True                 
                     msg = Bool()
                     msg.data = True
-                    self._pub_compute.publish(msg)
-            if(self.stopPatrol):
-                self.stop_patrol()
-                self.stopPatrol = False
-            if(self.goToUser):
+                    self._pub_compute.publish(msg)          # le mando al poses_mng un true para que a partir de ahora me pase la pose que vea
+                       
+            if(self.goToUser):                              # si quiero acercarme a la persona, llamo a start_goToUser()
                 self.start_goToUser()
                 self.goToUser = False
+
+            if(self.stopPatrol):                            # si quiero parar el patrol, llamo a stop_patrol()
+                self.stop_patrol()
+                self.stopPatrol = False
 
 def main(args=None):
     rclpy.init(args=args)
